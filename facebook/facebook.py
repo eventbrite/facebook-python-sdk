@@ -88,7 +88,7 @@ class GraphAPI(object):
     for the active user from the cookie saved by the SDK.
     """
 
-    def __init__(self, access_token=None, version=None):
+    def __init__(self, access_token=None, version=None, timeout=None, session=None):
         self.access_token = access_token
         self.version = version
         self.host = "graph.facebook.com/"
@@ -97,6 +97,8 @@ class GraphAPI(object):
         ) if not self.version else "https://{0}{1}/".format(
             self.host, self.version
         )
+        self.timeout = timeout
+        self.session = session or requests.session()
 
     def get_object(self, id, **args):
         """Fetchs the given object from the graph."""
@@ -138,7 +140,11 @@ class GraphAPI(object):
         extended permissions.
         """
         assert self.access_token, "Write operations require an access token"
-        return self.request(parent_object + "/" + connection_name, post_args=data)
+        return self.request(
+            '{0}/{1}'.format(parent_object, connection_name),
+            post_args=data,
+            method='POST'
+        )
 
     def put_wall_post(self, message, attachment={}, profile_id="me"):
         """Writes a wall post to the given profile's wall.
@@ -205,7 +211,7 @@ class GraphAPI(object):
         else:
             path = 'me/events'
 
-        response = self.request(path, post_args=data)
+        response = self.request(path, post_args=data, method='POST')
 
         if 'picture' in data and isinstance(response, dict) and 'id' in response:
             page_access_token = None
@@ -252,7 +258,7 @@ class GraphAPI(object):
 
     def delete_object(self, id):
         """Deletes the object with the given ID from the graph."""
-        return self.request(id, post_args={"method": "delete"})
+        return self.request(id, method="DELETE")
 
     def get_permissions(self, id):
         """Takes a Facebook user ID and returns a dict of perms.
@@ -280,30 +286,37 @@ class GraphAPI(object):
 
         return perms
 
-    def request(self, path, args=None, post_args=None):
+    def request(self, path, args=None, post_args=None, method=None):
         """Fetches the given path in the Graph API.
 
         We translate args to a valid query string. If post_args is given,
         we send a POST request to the given path with the given arguments.
         """
         if not args: args = {}
+        if post_args is not None:
+            method='POST'
         if self.access_token:
             if post_args is not None:
                 post_args["access_token"] = self.access_token
             else:
                 args["access_token"] = self.access_token
-        post_data = None if post_args is None else urllib.urlencode(post_args)
 
-        file = urllib.urlopen(self.url + path + "?" +
-                              urllib.urlencode(args), post_data)
         try:
-            response = _parse_json(file.read())
-        finally:
-            file.close()
-        if isinstance(response, dict) and response.get("error"):
-            raise GraphAPIError(response["error"]["type"],
-                                response["error"]["message"])
-        return response
+            response = self.session.request(
+                method or "GET",
+                self.url + path + '?' + urllib.urlencode(args),
+                data=post_args,
+                timeout=self.timeout,
+            )
+        except requests.HTTPError as e:
+            response = _parse_json(e.read())
+            if response.get("error"):
+                raise GraphAPIError(
+                    type=response["error"]["type"],
+                    message=response["error"]["message"]
+                )
+
+        return response.json()
 
     def multipart_request(self, path, args=None, post_args=None, files=None):
         """Request a given path in the Graph API with multipart support.
