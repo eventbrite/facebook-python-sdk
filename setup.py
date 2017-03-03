@@ -13,7 +13,7 @@ long_description = (
 
 setup(
     name='facebook-python-sdk',
-    version='0.1.1+eventbrite',
+    version='0.2.0+eventbrite',
     description='Eventbrite Fork of Facebook Python SDK',
     long_description=long_description,
     author='Facebook',
