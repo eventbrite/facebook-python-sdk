@@ -143,7 +143,7 @@ class GraphAPI(object):
         return self.request(
             '{0}/{1}'.format(parent_object, connection_name),
             post_args=data,
-            method='POST'
+            method='POST',
         )
 
     def put_wall_post(self, message, attachment={}, profile_id="me"):
@@ -258,7 +258,7 @@ class GraphAPI(object):
 
     def delete_object(self, id):
         """Deletes the object with the given ID from the graph."""
-        return self.request(id, method="DELETE")
+        return self.request(id, method='DELETE')
 
     def get_permissions(self, id):
         """Takes a Facebook user ID and returns a dict of perms.
@@ -304,9 +304,9 @@ class GraphAPI(object):
         try:
             response = self.session.request(
                 method=method or 'GET',
-                url='{0}{1}'.format(self.url,  path),
-                data=post_args,
+                url='{0}{1}'.format(self.url, path),
                 params=args,
+                data=post_args,
                 timeout=self.timeout,
             )
         except requests.HTTPError as e:
