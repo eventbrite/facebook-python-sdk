@@ -303,18 +303,18 @@ class GraphAPI(object):
 
         try:
             response = self.session.request(
-                method or "GET",
-                self.url + path + '?' + urllib.urlencode(args),
+                method=method or 'GET',
+                url='{0}{1}'.format(self.url,  path),
                 data=post_args,
+                params=args,
                 timeout=self.timeout,
             )
         except requests.HTTPError as e:
-            response = _parse_json(e.read())
-            if response.get("error"):
-                raise GraphAPIError(
-                    type=response["error"]["type"],
-                    message=response["error"]["message"]
-                )
+            error_response = _parse_json(e.read()) or {}
+            raise GraphAPIError(
+                type=error_response.get('error', {}).get('type'),
+                message=error_response.get('error', {}).get('message')
+            )
 
         return response.json()
 
