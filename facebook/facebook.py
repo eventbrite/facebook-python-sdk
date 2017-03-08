@@ -295,11 +295,14 @@ class GraphAPI(object):
         if not args: args = {}
         if post_args is not None:
             method='POST'
+
         if self.access_token:
-            if post_args is not None:
-                post_args["access_token"] = self.access_token
-            else:
-                args["access_token"] = self.access_token
+            # If post_args exists, we assume that args either does not exists
+            # or it does not need `access_token`.
+            if post_args and 'access_token' not in post_args:
+                post_args['access_token'] = self.access_token
+            elif 'access_token' not in args:
+                args['access_token'] = self.access_token
 
         try:
             response = self.session.request(
@@ -316,7 +319,16 @@ class GraphAPI(object):
                 message=error_response.get('error', {}).get('message')
             )
 
-        return response.json()
+        result = response.json()
+
+        if result.get('error'):
+            error_response = result.get('error')
+            raise GraphAPIError(
+                type=error_response.get('type'),
+                message=error_response.get('message')
+            )
+
+        return result
 
     def multipart_request(self, path, args=None, post_args=None, files=None):
         """Request a given path in the Graph API with multipart support.
