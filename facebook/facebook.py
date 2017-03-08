@@ -319,7 +319,16 @@ class GraphAPI(object):
                 message=error_response.get('error', {}).get('message')
             )
 
-        return response.json()
+        result = response.json()
+
+        if result.get('error'):
+            error_response = result.get('error')
+            raise GraphAPIError(
+                type=error_response.get('type'),
+                message=error_response.get('message')
+            )
+
+        return result
 
     def multipart_request(self, path, args=None, post_args=None, files=None):
         """Request a given path in the Graph API with multipart support.
