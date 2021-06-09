@@ -16,6 +16,7 @@
 
 """A Facebook stream client written against the Facebook Graph API."""
 
+from __future__ import absolute_import
 FACEBOOK_APP_ID = "your app id"
 FACEBOOK_APP_SECRET = "your app secret"
 

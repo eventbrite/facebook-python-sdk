@@ -21,6 +21,7 @@ local copy of basic user data so we don't need to make a round-trip to
 the Facebook API on every request once a user has logged in.
 """
 
+from __future__ import absolute_import
 import facebook
 import tornado.database
 import tornado.httpserver

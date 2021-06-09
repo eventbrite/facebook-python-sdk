@@ -16,6 +16,7 @@
 
 """A barebones AppEngine application that uses Facebook for login."""
 
+from __future__ import absolute_import
 FACEBOOK_APP_ID = "your app id"
 FACEBOOK_APP_SECRET = "your app secret"
 

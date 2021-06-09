@@ -27,19 +27,20 @@ as it handles some complex authentication states that can only be detected
 in client-side code.
 """
 
+from __future__ import absolute_import
 FACEBOOK_APP_ID = "your app id"
 FACEBOOK_APP_SECRET = "your app secret"
 
 import base64
 import cgi
-import Cookie
+import six.moves.http_cookies
 import email.utils
 import hashlib
 import hmac
 import logging
 import os.path
 import time
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import wsgiref.handlers
 
 from django.utils import simplejson as json
@@ -84,16 +85,16 @@ class LoginHandler(BaseHandler):
         if self.request.get("code"):
             args["client_secret"] = FACEBOOK_APP_SECRET
             args["code"] = self.request.get("code")
-            response = cgi.parse_qs(urllib.urlopen(
+            response = cgi.parse_qs(six.moves.urllib.request.urlopen(
                 "https://graph.facebook.com/oauth/access_token?" +
-                urllib.urlencode(args)).read())
+                six.moves.urllib.parse.urlencode(args)).read())
             access_token = response["access_token"][-1]
 
             # Download the user profile and cache a local instance of the
             # basic profile info
-            profile = json.load(urllib.urlopen(
+            profile = json.load(six.moves.urllib.request.urlopen(
                 "https://graph.facebook.com/me?" +
-                urllib.urlencode(dict(access_token=access_token))))
+                six.moves.urllib.parse.urlencode(dict(access_token=access_token))))
             user = User(key_name=str(profile["id"]), id=str(profile["id"]),
                         name=profile["name"], access_token=access_token,
                         profile_url=profile["link"])
@@ -104,7 +105,7 @@ class LoginHandler(BaseHandler):
         else:
             self.redirect(
                 "https://graph.facebook.com/oauth/authorize?" +
-                urllib.urlencode(args))
+                six.moves.urllib.parse.urlencode(args))
 
 
 class LogoutHandler(BaseHandler):
@@ -118,7 +119,7 @@ def set_cookie(response, name, value, domain=None, path="/", expires=None):
     timestamp = str(int(time.time()))
     value = base64.b64encode(value)
     signature = cookie_signature(value, timestamp)
-    cookie = Cookie.BaseCookie()
+    cookie = six.moves.http_cookies.BaseCookie()
     cookie[name] = "|".join([value, timestamp, signature])
     cookie[name]["path"] = path
     if domain: cookie[name]["domain"] = domain
