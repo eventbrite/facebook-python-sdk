@@ -33,14 +33,16 @@ usage of this module might look like this:
 
 """
 
+from __future__ import absolute_import
 import cgi
 import hashlib
 import time
-import urllib
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import random
 import mimetypes
-import httplib
+import six.moves.http_client
 import requests
+from six.moves import range
 
 # Find a JSON parser
 # try:
@@ -375,8 +377,8 @@ class GraphAPI(object):
             else:
                 args["access_token"] = self.access_token
 
-        path = path + "?" + urllib.urlencode(args)
-        connection = httplib.HTTPSConnection("graph.facebook.com")
+        path = path + "?" + six.moves.urllib.parse.urlencode(args)
+        connection = six.moves.http_client.HTTPSConnection("graph.facebook.com")
         method = "POST" if post_args or files else "GET"
         connection.request(method, path,
                             *__encode_multipart_data(post_args, files))
@@ -441,8 +443,8 @@ class FQLAPI(object):
     def request(self, query):
         """ Performs the given query on Facebook or raises an `FQLAPIError` """
 
-        file = urllib.urlopen('https://api.facebook.com/method/fql.query?access_token=%s&format=json&query=%s' % (
-            urllib.quote_plus(self.access_token), urllib.quote_plus(query)))
+        file = six.moves.urllib.request.urlopen('https://api.facebook.com/method/fql.query?access_token=%s&format=json&query=%s' % (
+            six.moves.urllib.parse.quote_plus(self.access_token), six.moves.urllib.parse.quote_plus(query)))
         try:
             response = _parse_json(file.read())
         finally:
