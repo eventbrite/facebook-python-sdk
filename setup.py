@@ -32,6 +32,7 @@ setup(
     package_dir={'facebook': 'facebook'},
     install_requires=[
         'requests>=2.4',
+        'six >=1.16',
     ],
     packages=[
         'facebook',
