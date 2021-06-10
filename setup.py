@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import codecs
+import os
+
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+with codecs.open(
+    os.path.join(os.path.dirname(__file__), 'facebook', 'version.txt'),
+    mode='rb',
+    encoding='utf8',
+) as _version_file:
+    __version__ = _version_file.read().strip()
 
 long_description = (
     'This client library is designed to support the Facebook Graph API and the '
@@ -14,7 +24,7 @@ long_description = (
 
 setup(
     name='facebook-python-sdk',
-    version='0.2.1+eventbrite',
+    version=__version__,
     description='Eventbrite Fork of Facebook Python SDK',
     long_description=long_description,
     author='Facebook',
