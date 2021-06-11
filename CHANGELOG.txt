@@ -3,3 +3,9 @@
 -----------------------------
 - Python 3 support
 
+
+0.2.3+eventbrite (2021-06-11)
+-----------------------------
+- update fingerprints
+- require six package
+
